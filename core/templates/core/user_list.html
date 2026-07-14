@@ -1,0 +1,35 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/messages.css' %}">
+
+<div class="messages-container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2>Виберіть користувача для спілкування</h2>
+        <a href="{% url 'inbox' %}" class="btn-primary" style="text-decoration: none;">Назад в повідомлення</a>
+    </div>
+
+    <div class="card" style="padding: 10px 0;">
+        {% if users %}
+            <ul style="list-style: none; padding: 0; margin: 0;">
+                {% for u in users %}
+                    <li style="border-bottom: 1px solid #f1f5f9; padding: 15px 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong style="font-size: 1.1rem; color: #1e293b;">{{ u.username }}</strong>
+                                <p style="margin: 2px 0 0 0; font-size: 0.85rem; color: #64748b;">{{ u.email }}</p>
+                            </div>
+                            <a href="{% url 'chat' u.id %}" class="btn-primary" style="text-decoration: none; padding: 8px 16px;">
+                                Розпочати чат
+                            </a>
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p style="padding: 20px; text-align: center; color: #64748b;">Інших зареєстрованих користувачів поки немає.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

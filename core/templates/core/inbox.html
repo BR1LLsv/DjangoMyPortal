@@ -1,0 +1,45 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/messages.css' %}">
+
+<div class="messages-container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2>Мої повідомлення</h2>
+        <a href="{% url 'user_list' %}" class="btn-new-chat">+ Почати новий чат</a>
+    </div>
+
+    {% if dialogs %}
+        <div class="dialogs-list">
+            {% for d in dialogs %}
+                <a href="{% url 'chat' d.partner.id %}" class="dialog-card">
+                    <div class="dialog-info">
+                        <span class="dialog-partner">{{ d.partner.username }}</span> 
+                        <span class="dialog-last-msg">
+                            {% if d.last_message %}
+                                {% if d.last_message.sender == request.user %}Ви: {% endif %}{{ d.last_message.text }} 
+                            {% else %}
+                                <i>Немає повідомлень</i>
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="dialog-meta">
+                        {% if d.last_message %}
+                            <span class="dialog-time">{{ d.last_message.created_at|date:"H:i" }}</span> 
+                        {% endif %}
+                        {% if d.unread_count > 0 %}
+                            <span class="unread-badge">+{{ d.unread_count }}</span>
+                        {% endif %}
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card" style="text-align: center; padding: 40px 20px;">
+            <p style="color: #64748b; font-size: 1.1rem; margin-bottom: 20px;">У вас ще немає переписок </p>
+            <a href="{% url 'user_list' %}" class="btn-primary" style="text-decoration: none;">Знайти співрозмовника</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

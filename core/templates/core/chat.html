@@ -1,0 +1,46 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/messages.css' %}">
+
+<div class="messages-container">
+    <div class="chat-box">
+        <div class="chat-header">
+            <span>Чат з {{ other_user.username }}</span> 
+            <a href="{% url 'inbox' %}" style="color: #ffffff; text-decoration: none; font-size: 0.9rem;">✕ Закрити</a>
+        </div>
+
+        <div class="chat-history" id="chatHistory">
+            {% if chat_messages %}
+                {% for msg in chat_messages %}
+                    <div class="message-bubble {% if msg.sender == request.user %}sender{% else %}recipient{% endif %}">
+                        {% if msg.sender != request.user %}
+                            <strong style="display: block; font-size: 0.8rem; margin-bottom: 3px;">{{ msg.sender.username }}</strong>
+                        {% endif %}
+                        <span>{{ msg.text }}</span>
+                        <span class="message-time">{{ msg.created_at|date:"H:i | d.m.Y" }}</span>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div style="margin: auto; text-align: center; color: #94a3b8;">
+                    <p>Історія повідомлень порожня. Розпочніть діалог прямо зараз!</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="chat-form-container">
+            <form method="post" class="chat-form">
+                {% csrf_token %}
+                <input type="text" name="text" class="chat-input" placeholder="Введіть повідомлення..." required autocomplete="off">
+                <button type="submit" class="chat-send-btn">Відправити</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    const chatHistory = document.getElementById('chatHistory');
+    chatHistory.scrollTop = chatHistory.scrollHeight;
+</script>
+{% endblock %}

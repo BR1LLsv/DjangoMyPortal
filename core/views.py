@@ -4,6 +4,9 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from .forms import UserRegisterForm, UserUpdateForm, ProfileUpdateForm, NoteForm
 from .models import Note
+from django.db.models import Q
+from django.contrib.auth.models import User
+from .models import Message
 
 def register_view(request):
     if request.user.is_authenticated:
@@ -134,3 +137,66 @@ def delete_note(request, note_id):
         note = get_object_or_404(Note, id=note_id, user=request.user)
         note.delete()
     return redirect('notes')
+
+@login_required
+def user_list_view(request):
+    users = User.objects.exclude(pk=request.user.pk)
+    return render(request, 'core/user_list.html', {'users': users})
+
+
+@login_required
+def chat_view(request, user_id):
+    if user_id == request.user.pk:
+        return redirect('user_list')
+        
+    other_user = get_object_or_404(User, pk=user_id)
+    
+    if request.method == 'POST':
+        text = request.POST.get('text', '').strip()
+        if text:
+            Message.objects.create(
+                sender=request.user,
+                recipient=other_user,
+                text=text
+            )
+            return redirect('chat', user_id=user_id)
+            
+    chat_messages = Message.objects.filter(
+        Q(sender=request.user, recipient=other_user)
+        | Q(sender=other_user, recipient=request.user)
+    )
+    
+    chat_messages.filter(recipient=request.user, is_read=False).update(is_read=True)
+    
+    return render(request, 'core/chat.html', {
+        'other_user': other_user,
+        'chat_messages': chat_messages
+    })
+
+
+@login_required
+def inbox_view(request):
+    sent_to = Message.objects.filter(sender=request.user).values_list('recipient', flat=True)
+    received_from = Message.objects.filter(recipient=request.user).values_list('sender', flat=True)
+    partner_ids = set(sent_to) | set(received_from)
+
+    partners = User.objects.filter(pk__in=partner_ids)
+    dialogs = []
+    
+    for partner in partners:
+        last_msg = Message.objects.filter(
+            Q(sender=request.user, recipient=partner) |
+            Q(sender=partner, recipient=request.user)
+        ).last()
+        
+        unread_count = Message.objects.filter(sender=partner, recipient=request.user, is_read=False).count()
+        
+        dialogs.append({
+            'partner': partner,
+            'last_message': last_msg,
+            'unread_count': unread_count
+        })
+     
+    dialogs.sort(key=lambda x: x['last_message'].created_at if x['last_message'] else None, reverse=True)
+    
+    return render(request, 'core/inbox.html', {'dialogs': dialogs})
