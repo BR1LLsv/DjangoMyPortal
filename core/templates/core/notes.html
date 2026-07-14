@@ -1,0 +1,82 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h2>Мої завдання</h2>
+    <button class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.9rem;" onclick="openModal()">+ Нове завдання</button>
+</div>
+
+<div class="tabs">
+    <a href="?filter=all" class="{% if current_filter == 'all' or not current_filter %}active{% endif %}">Всі</a>
+    <a href="?filter=active" class="{% if current_filter == 'active' %}active{% endif %}">Активні</a>
+    <a href="?filter=completed" class="{% if current_filter == 'completed' %}active{% endif %}">Виконані</a>
+</div>
+
+<div class="notes-grid">
+    {% for note in notes %}
+        <div class="note-card">
+            <div>
+                <h3 class="note-title" {% if note.is_completed %}style="text-decoration: line-through; color: var(--text-muted);"{% endif %}>
+                    {{ note.title }}
+                </h3>
+                <p class="note-desc">{{ note.description|default:"Без опису..." }}</p>
+            </div>
+            
+            <div class="note-actions">
+                <form action="{% url 'toggle_note' note.id %}" method="POST" style="display: inline;">
+                    {% csrf_token %}
+                    {% if note.is_completed %}
+                        <button type="submit" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">↩ Вернути</button>
+                    {% else %}
+                        <button type="submit" class="btn btn-success" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">✓ Виконано</button>
+                    {% endif %}
+                </form>
+                
+                <form action="{% url 'delete_note' note.id %}" method="POST" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" onclick="return confirm('Видалити це завдання?')">Видалити</button>
+                </form>
+            </div>
+        </div>
+    {% empty %}
+        <div style="grid-column: 1/-1; text-align: center; padding: 2rem; color: var(--text-muted);">
+            <p>Немає завдань у цій категорії.</p>
+        </div>
+    {% endfor %}
+</div>
+
+<div id="taskModal" class="modal-overlay">
+    <div class="modal-content">
+        <h3 style="margin-bottom: 1.5rem;">Нове завдання</h3>
+        <form method="POST" action="{% url 'notes' %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="id_title">Назва завдання</label>
+                <input type="text" name="title" id="id_title" required placeholder="Наприклад: Вивчити Django">
+            </div>
+            <div class="form-group">
+                <label for="id_description">Опис</label>
+                <textarea name="description" id="id_description" rows="3" placeholder="Додай деталі..."></textarea>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem;">
+                <button type="button" class="btn btn-secondary" style="padding: 0.5rem 1rem;" onclick="closeModal()">Скасувати</button>
+                <button type="submit" class="btn btn-primary" style="padding: 0.5rem 1rem;">Створити</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openModal() {
+        document.getElementById('taskModal').style.display = 'flex';
+    }
+    function closeModal() {
+        document.getElementById('taskModal').style.display = 'none';
+    }
+    window.onclick = function(event) {
+        var modal = document.getElementById('taskModal');
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+</script>
+{% endblock %}

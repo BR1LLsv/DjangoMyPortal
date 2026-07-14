@@ -1,0 +1,22 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<div class="card">
+    <h2>Вітаємо, {{ user.first_name }} {{ user.last_name }}!</h2>
+    <p style="color: var(--text-muted); margin-bottom: 2rem;">Ось статистика ваших поточних справ на сьогодні:</p>
+    
+    <div class="stats-grid">
+        <div class="stat-item">
+            <div class="num">{{ total }}</div>
+            <div class="label">Всього завдань</div>
+        </div>
+        <div class="stat-item">
+            <div class="num" style="color: var(--success);">{{ done }}</div>
+            <div class="label">Виконано</div>
+        </div>
+        <div class="stat-item">
+            <div class="num" style="color: var(--danger);">{{ left }}</div>
+            <div class="label">Залишилось</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

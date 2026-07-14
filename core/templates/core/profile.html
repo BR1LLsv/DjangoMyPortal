@@ -1,0 +1,27 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <h2>Редагування особистого профілю</h2>
+    <p style="margin-bottom: 1.5rem; color: var(--text-muted);">Логін в системі: <strong>{{ user.username }}</strong></p>
+    
+    <form method="POST">
+        {% csrf_token %}
+        <h3>Основні дані</h3>
+        <div style="margin-bottom: 1.5rem;">
+            {% for field in u_form %}
+                <div class="form-group">
+                    <label>{{ field.label }}</label>
+                    {{ field }}
+                </div>
+            {% endfor %}
+        </div>
+        
+        <h3>Про себе</h3>
+        <div class="form-group">
+            {{ p_form.bio }}
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Зберегти зміни</button>
+    </form>
+</div>
+{% endblock %}
